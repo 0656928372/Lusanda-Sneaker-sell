@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register / Login - Lusanda Sneakers</title>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('images/b.jpg') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 24px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input {
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #ccc;
+    }
+
+    button {
+      background: #00b894;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #019874;
+    }
+
+    .section-divider {
+      font-weight: bold;
+      margin: 20px;
+      color: #eee;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      body {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Register</h2>
+    <form onsubmit="registerUser(event)">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="tel" id="phone" placeholder="Phone Number" required />
+      <input type="text" id="location" placeholder="Location" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      <input type="text" id="otp" placeholder="Enter OTP sent to email" style="display:none;" />
+      <button type="submit">Register</button>
+    </form>
+  </div>
+
+  <div class="section-divider">OR</div>
+
+  <div class="form-container">
+    <h2>Login</h2>
+    <form onsubmit="loginUser(event)">
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="tel" id="loginPhone" placeholder="Phone Number" required />
+      <input type="password" id="loginPassword" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <script>
+    emailjs.init("mEncCr_VPy_"); // Replace with your EmailJS public key
+
+    let generatedOTP = '';
+    let otpSent = false;
+
+    function sendOTP(email) {
+      generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const templateParams = {
+        to_email: email,
+        otp: generatedOTP
+      };
+
+      emailjs.send("service_80pk2", "template_qddj95d", templateParams)
+        .then(() => {
+          alert("OTP sent to your email.");
+          document.getElementById("otp").style.display = "block";
+          otpSent = true;
+        })
+        .catch((error) => {
+          alert("Failed to send OTP. Please check your EmailJS setup.");
+          console.error(error);
+        });
+    }
+
+    function registerUser(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const otpInput = document.getElementById('otp').value.trim();
+
+      if (!otpSent) {
+        if (password !== confirmPassword) {
+          alert("Passwords do not match.");
+          return;
+        }
+        sendOTP(email);
+        return;
+      }
+
+      if (otpInput !== generatedOTP) {
+        alert("Invalid OTP. Please check your email and try again.");
+        return;
+      }
+
+      const user = { name, email, phone, location, password };
+      localStorage.setItem('lusanda_user', JSON.stringify(user));
+      alert('Registration successful!');
+      window.location.href = 'Dashboard.html';
+    }
+
+    function loginUser(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const phone = document.getElementById('loginPhone').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      const user = JSON.parse(localStorage.getItem('lusanda_user'));
+
+      if (user && user.email === email && user.phone === phone && user.password === password) {
+        alert('Login successful!');
+        window.location.href = 'Dashboard.html';
+      } else {
+        alert('Login failed. Check your credentials or register first.');
+      }
+    }
+  </script>
+</body>
+</html>

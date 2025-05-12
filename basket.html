@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Basket - Lusanda Sneakers</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .basket-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    .basket-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 15px 0;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .basket-item img {
+      width: 100px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .basket-details {
+      flex: 1;
+      margin-left: 15px;
+    }
+    .basket-details p {
+      margin: 4px 0;
+      color: #444;
+    }
+    .remove-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .remove-btn:hover {
+      background: #c0392b;
+    }
+    .checkout-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 14px 28px;
+      font-size: 16px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .checkout-btn:hover {
+      background: #27ae60;
+    }
+    .empty {
+      text-align: center;
+      color: #777;
+      margin: 40px 0;
+    }
+  </style>
+</head>
+<body onload="loadBasket()">
+  <h2>Your Sneaker Basket</h2>
+  <div class="basket-container" id="basketContainer"></div>
+  <button class="checkout-btn" onclick="checkout()">Checkout</button>
+
+  <script>
+    function loadBasket() {
+      const basket = JSON.parse(localStorage.getItem('lusanda_basket')) || [];
+      const container = document.getElementById('basketContainer');
+
+      if (basket.length === 0) {
+        container.innerHTML = '<p class="empty">Your basket is empty.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      basket.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'basket-item';
+        div.innerHTML = `
+          <img src="images/${item.image}" alt="${item.name}" />
+          <div class="basket-details">
+            <p><strong>${item.name}</strong></p>
+            <p>Size: ${item.size}</p>
+            <p>Price: R${item.price}</p>
+          </div>
+          <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function removeItem(index) {
+      let basket = JSON.parse(localStorage.getItem('lusanda_basket')) || [];
+      basket.splice(index, 1);
+      localStorage.setItem('lusanda_basket', JSON.stringify(basket));
+      loadBasket();
+    }
+
+    function checkout() {
+      const basket = JSON.parse(localStorage.getItem('lusanda_basket')) || [];
+      if (basket.length === 0) {
+        alert('Your basket is empty.');
+        return;
+      }
+
+      const name = prompt("Enter your name:");
+      const number = prompt("Enter your phone number:");
+
+      const total = basket.reduce((sum, item) => sum + item.price, 0);
+      let message = `*New Order from ${name} (${number}):*\n\n`;
+      basket.forEach((item, i) => {
+        message += `Sneaker ${i + 1}: ${item.name}\nSize: ${item.size}\nPrice: R${item.price}\n\n`;
+      });
+      message += `*Total:* R${total}`;
+
+      const encodedMsg = encodeURIComponent(message);
+      window.open(`https://wa.me/27637511144?text=${encodedMsg}`, '_blank');
+
+      alert(`Thank you for your purchase! Total: R${total}`);
+      localStorage.removeItem('lusanda_basket');
+      loadBasket();
+    }
+  </script>
+</body>
+</html>

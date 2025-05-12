@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel - Lusanda Sneakers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 30px;
+    }
+    h2 {
+      color: #2d2d2d;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #aaa;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: #2d89ef;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e65bd;
+    }
+    img.preview {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .sneaker-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .sneaker-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      width: 230px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .sneaker-card img {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .sneaker-card h4 {
+      margin: 10px 0 5px;
+    }
+    .sneaker-card button {
+      margin-top: 5px;
+      padding: 8px;
+      font-size: 14px;
+    }
+    .edit-btn { background: #ffc107; }
+    .edit-btn:hover { background: #e0a800; }
+    .delete-btn { background: #dc3545; }
+    .delete-btn:hover { background: #b02a37; }
+    .sale-btn { background: #28a745; }
+    .sale-btn:hover { background: #218838; }
+  </style>
+</head>
+<body onload="verifyAdmin(); loadSneakers()">
+  <h2>Add New Sneaker</h2>
+  <form id="adminForm">
+    <input type="text" id="sneakerName" placeholder="Sneaker Name" required>
+    <input type="text" id="sneakerSize" placeholder="Size (e.g. 9)" required>
+    <input type="number" id="sneakerPrice" placeholder="Price (R)" required>
+    <input type="file" id="sneakerFile" accept="image/*" required onchange="previewImage(event)">
+    <select id="sneakerCategory" required>
+      <option value="">Select Category</option>
+      <option value="Running">Running</option>
+      <option value="Casual">Casual</option>
+      <option value="High Tops">High Tops</option>
+      <option value="Limited Edition">Limited Edition</option>
+    </select>
+    <img id="imagePreview" class="preview" src="" alt="Preview" style="display:none;">
+    <button type="submit">Add Sneaker</button>
+  </form>
+
+  <h2>All Added Sneakers</h2>
+  <div class="sneaker-list" id="sneakerList"></div>
+
+  <script>
+    function verifyAdmin() {
+      const code = prompt("Enter admin access code:");
+      if (code !== "2010") {
+        alert("Incorrect code. Redirecting to dashboard.");
+        window.location.href = "dashboard.html";
+      }
+    }
+
+    let base64Image = '';
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          base64Image = e.target.result;
+          document.getElementById('imagePreview').src = base64Image;
+          document.getElementById('imagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function loadSneakers() {
+      const sneakers = JSON.parse(localStorage.getItem('lusanda_admin_products')) || [];
+      renderSneakerList(sneakers);
+    }
+
+    function renderSneakerList(list) {
+      const container = document.getElementById('sneakerList');
+      container.innerHTML = '';
+      list.forEach((s, i) => {
+        const card = document.createElement('div');
+        card.className = 'sneaker-card';
+        card.innerHTML = `
+          <img src="${s.image}" alt="${s.name}">
+          <h4>${s.name}</h4>
+          <p>Size: ${s.size}</p>
+          <p>R${s.price}</p>
+          <p>Category: ${s.category || 'N/A'}</p>
+          <p>Sales: ${s.sales || 0}</p>
+          <button class="sale-btn" onclick="simulateSale(${i})">Simulate Sale</button>
+          <button class="edit-btn" onclick="editSneaker(${i})">Edit</button>
+          <button class="delete-btn" onclick="deleteSneaker(${i})">Delete</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById('adminForm').onsubmit = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('sneakerName').value;
+      const size = document.getElementById('sneakerSize').value;
+      const price = parseFloat(document.getElementById('sneakerPrice').value);
+      const category = document.getElementById('sneakerCategory').value;
+
+      const newSneaker = {
+        name, size, price, category,
+        image: base64Image,
+        sales: 0
+      };
+
+      let sneakers = JSON.parse(localStorage.getItem('lusanda_admin_products')) || [];
+      sneakers.push(newSneaker);
+      localStorage.setItem('lusanda_admin_products', JSON.stringify(sneakers));
+      alert('Sneaker added!');
+      document.getElementById('adminForm').reset();
+      document.getElementById('imagePreview').style.display = 'none';
+      loadSneakers();
+    };
+
+    function simulateSale(index) {
+      let sneakers = JSON.parse(localStorage.getItem('lusanda_admin_products')) || [];
+      sneakers[index].sales = (sneakers[index].sales || 0) + 1;
+      localStorage.setItem('lusanda_admin_products', JSON.stringify(sneakers));
+      loadSneakers();
+    }
+
+    function editSneaker(index) {
+      alert('Edit functionality not implemented yet.');
+    }
+
+    function deleteSneaker(index) {
+      let sneakers = JSON.parse(localStorage.getItem('lusanda_admin_products')) || [];
+      if (confirm("Delete this sneaker?")) {
+        sneakers.splice(index, 1);
+        localStorage.setItem('lusanda_admin_products', JSON.stringify(sneakers));
+        loadSneakers();
+      }
+    }
+  </script>
+</body>
+</html>

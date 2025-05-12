@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cc Lusanda Sneakers</title>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+    }
+    .sidebar {
+      width: 250px;
+      background: #ffffff;
+      padding: 20px;
+      border-right: 1px solid #ddd;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+    .main {
+      flex: 1;
+      padding: 30px;
+    }
+    .product {
+      display: inline-block;
+      width: 200px;
+      margin: 15px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 15px;
+      transition: transform 0.2s ease;
+    }
+    .product:hover {
+      transform: translateY(-5px);
+    }
+    img {
+      width: 100%;
+      height: 150px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      background: #2d89ef;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #2063b4;
+    }
+    input[type="search"] {
+      padding: 12px;
+      width: 300px;
+      border: 1px solid #aaa;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      outline: none;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .sidebar h3 {
+      color: #444;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+    .sidebar p, .sidebar a {
+      font-size: 15px;
+      margin-top: 10px;
+      color: #555;
+    }
+    .sidebar a {
+      color: #2d89ef;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .sidebar a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body onload="loadDashboard()">
+  <div class="sidebar">
+    <h3>User Info</h3>
+    <p id="userName"></p>
+    <p id="userEmail"></p>
+    <p id="userPhone"></p>
+    <p id="userLocation"></p>
+    <a href="basket.html">View Basket</a><br>
+    <a href="#" onclick="accessAdmin()">Admin</a>
+  </div>
+
+  <div class="main">
+    <h2>Available Sneakers</h2>
+    <input type="search" id="searchInput" placeholder="Search sneakers..." onkeyup="filterSneakers()">
+    <div id="productList"></div>
+  </div>
+
+  <script>
+    const defaultSneakers = [
+      { id: 1, name: "Air Max", size: "8", price: 1200, image: "1.jpg" },
+      { id: 2, name: "Yeezy Boost", size: "9", price: 2000, image: "2.jpg" },
+      { id: 3, name: "Nike Court", size: "7", price: 950, image: "3.jpg" },
+      { id: 4, name: "Puma RS-X", size: "10", price: 1100, image: "4.jpg" },
+      { id: 5, name: "Adidas Superstar", size: "9", price: 1300, image: "5.jpg" },
+      { id: 6, name: "Converse All Star", size: "8", price: 800, image: "6.jpg" },
+      { id: 7, name: "New Balance 574", size: "10", price: 1400, image: "7.jpg" },
+      { id: 8, name: "Reebok Classic", size: "7", price: 850, image: "8.jpg" },
+      { id: 9, name: "Jordan Retro 4", size: "9", price: 2200, image: "9.jpg" },
+      { id: 10, name: "Vans Old Skool", size: "8", price: 900, image: "10.jpg" }
+    ];
+
+    let sneakers = [];
+
+    function loadDashboard() {
+      const user = JSON.parse(localStorage.getItem('lusanda_user')) || {};
+      document.getElementById('userName').innerText = "Name: " + (user.name || "N/A");
+      document.getElementById('userEmail').innerText = "Email: " + (user.email || "N/A");
+      document.getElementById('userPhone').innerText = "Phone: " + (user.phone || "N/A");
+      document.getElementById('userLocation').innerText = "Location: " + (user.location || "N/A");
+
+      const addedSneakers = JSON.parse(localStorage.getItem('lusanda_admin_products')) || [];
+      sneakers = [...defaultSneakers, ...addedSneakers];
+      renderSneakers(sneakers);
+    }
+
+    function renderSneakers(list) {
+      const container = document.getElementById('productList');
+      container.innerHTML = '';
+      list.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <img src="images/${s.image}" alt="${s.name}" />
+          <h4>${s.name}</h4>
+          <p>Size: ${s.size}</p>
+          <p>R${s.price}</p>
+          <button onclick='addToBasket(${JSON.stringify(s)})'>Add to Basket</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function filterSneakers() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = sneakers.filter(s => s.name.toLowerCase().includes(search));
+      renderSneakers(filtered);
+    }
+
+    function addToBasket(sneaker) {
+      const basket = JSON.parse(localStorage.getItem('lusanda_basket')) || [];
+      basket.push(sneaker);
+      localStorage.setItem('lusanda_basket', JSON.stringify(basket));
+      alert(`${sneaker.name} added to basket.`);
+    }
+
+    function accessAdmin() {
+      const code = prompt("Enter admin code:");
+      if (code === "2010") {
+        location.href = "admin.html";
+      } else {
+        alert("⚠️ Incorrect admin code!");
+      }
+    }
+  </script>
+</body>
+</html>
